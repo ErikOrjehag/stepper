@@ -9,19 +9,19 @@ int PIN_STEP[] = { 4, 5, 8, 12 };
 long TIMER_INTERVAL = 125L;
 long STEPS_PER_REV = 2000L;
 
-unsigned int* MOTOR_TICKS;
-unsigned int* MOTOR_REMAINING;
+unsigned int* motor_ticks;
+unsigned int* motor_remaining;
 
 void setup() {
 
- Serial.begin(9600);
+  Serial.begin(9600);
   
-  MOTOR_TICKS = new unsigned int[NUM_MOTORS];
-  MOTOR_REMAINING = new unsigned int[NUM_MOTORS];
+  motor_ticks = new unsigned int[NUM_MOTORS];
+  motor_remaining = new unsigned int[NUM_MOTORS];
   
   for (int i = 0; i < NUM_MOTORS; i++) {
-    MOTOR_TICKS[i] = UINT_MAX;
-    MOTOR_REMAINING[i] = 0;
+    motor_ticks[i] = UINT_MAX;
+    motor_remaining[i] = 0;
     
     pinMode(PIN_ENABLE[i], OUTPUT);
     pinMode(PIN_DIR[i], OUTPUT);
@@ -36,29 +36,34 @@ void setup() {
 }
 
 void loop() {
-  long t = millis();
-  for (int i = 0; i < NUM_MOTORS; i++) {
-    float r = t / (400.0 + 50 * i) + (PI / 4) * i;
-    float s = (sin(r) + 1.0) / 2.0;
-    int ticks = 5 + 100 * s;
-    MOTOR_TICKS[i] = ticks;
-  }
-
+  set_motor_speed(0, 100);
   delay(10);
 }
 
-bool led = false;
+void set_motor_speed(unsigned char motor, int speed) {
+  unsigned int ticks = (unsigned int) ((1000L * 1000000L)/(TIMER_INTERVAL*STEPS_PER_REVOLUTION*abs(speed)));
+  motor_ticks[motor] = ticks;
+  motor_remaining[motor] = ticks;
+    
+  #if ENABLE_TRACES
+  Serial.println("motor %i = %i rps/1000\r\n", motor, speed);
+  Serial.println("N time quanta = %u\r\n", ticks);
+  Serial.println("dirmask = 0x%X\r\n", direction);
+  #endif
+}
 
 ISR(TIMER1_COMPA_vect) {
 
   for (int i = 0; i < NUM_MOTORS; i++) {
-    MOTOR_REMAINING[i]--;
-    if (MOTOR_REMAINING[i] == 0) {
-      MOTOR_REMAINING[i] = MOTOR_TICKS[i];
-      digitalWrite(PIN_STEP[i], HIGH);
-      
-      led = !led;
-      //digitalWrite(13, led);
+    if (motor_ticks[i] = UINT_MAX) {
+      digitalWrite(PIN_ENABLE[i], LOW);
+    } else {
+      motor_remaining[i]--;
+      if (motor_remaining[i] == 0) {
+        motor_remaining[i] = motor_ticks[i];
+        digitalWrite(PIN_ENABLE[i], HIGH);
+        digitalWrite(PIN_STEP[i], HIGH);
+      }
     }
   }
   
