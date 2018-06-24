@@ -61,7 +61,7 @@ void set_motor_speed(int motor, int speed) {
   unsigned int ticks = (unsigned int) ((1000L * 1000000L)/(TIMER_INTERVAL*STEPS_PER_REV*abs(speed)));
   motor_ticks[motor] = ticks;
   
-  digitalWrite(PIN_ENABLE[motor], ticks != UINT_MAX);
+  //digitalWrite(PIN_ENABLE[motor], ticks != UINT_MAX);
   digitalWrite(PIN_DIR[motor], speed < 0);
 }
 
