@@ -3,12 +3,14 @@ from time import sleep
 from inputs import get_gamepad
 from threading import Thread
 import numpy as np
+import sys
 
-arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyUSB0", baud_rate=9600)
+arduino = PyCmdMessenger.ArduinoBoard(sys.argv[1], baud_rate=9600)
 
 # List of command names (and formats for their associated arguments). These must
 # be in the same order as in the sketch.
 commands = [
+    ["asd", ""],
     ["steer", "iiii"]
 ]
 
@@ -57,17 +59,17 @@ try:
             (0, 0, 1)
         ))
         C = np.array((a, x, y))
-        print(C)
 
         M = -0.1*(np.sqrt(2)/R)*A.dot(B.dot(C))
 
-        c.send("steer",
-            int(1000*M[0]/(2*np.pi)),
-            int(1000*M[1]/(2*np.pi)),
-            int(1000*M[2]/(2*np.pi)),
-            int(1000*M[3]/(2*np.pi))
-        )
+        S = []
+        for m in M:
+            S.append(int(1000*m/(2*np.pi)))
 
-        sleep(0.05)
+        print(S)
+
+        c.send("steer", S[0], S[1], S[2], S[3])
+
+        sleep(0.5)
 except KeyboardInterrupt:
     print('interrupted!')

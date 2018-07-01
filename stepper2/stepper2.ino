@@ -4,7 +4,7 @@
 
 int LED_PIN = 13;
 int NUM_MOTORS = 4;
-int PIN_ENABLE[] = { 2, 7, 10, A0 };
+int PIN_ENABLE[] = { PB12, PA11, PB3, PB6 };
 int PIN_DIR[] = { 3, 6, 9, 11 };
 int PIN_STEP[] = { 4, 5, 8, 12 };
 
